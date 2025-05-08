@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surprise for You</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Caveat:wght@400;700&display=swap');
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            background: #ffe6e6;
+        }
+        #nameInputContainer {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 5vmin;
+            border-radius: 3vmin;
+            text-align: center;
+            box-shadow: 0 1vmin 3vmin rgba(0, 0, 0, 0.3);
+            max-width: 80vw;
+            z-index: 30;
+            border: 0.5vmin solid #ff6f61;
+        }
+        #nameInputContainer input {
+            padding: 2vmin;
+            font-size: 4vmin;
+            border: 0.3vmin solid #ff6f61;
+            border-radius: 1vmin;
+            margin: 2vmin;
+            font-family: 'Caveat', cursive;
+        }
+        #messageBox {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 5vw;
+            border-radius: 3vmin;
+            text-align: center;
+            box-shadow: 0 1vmin 3vmin rgba(0, 0, 0, 0.3);
+            max-width: 80vw;
+            transform: translateY(-5vh) scale(0.9);
+            opacity: 0;
+            transition: all 1.2s ease-in-out;
+            border: 0.5vmin solid #ff6f61;
+            background: linear-gradient(145deg, #fff, #ffe6e6);
+            z-index: 10;
+            box-sizing: border-box;
+            animation: glow 2s ease-in-out infinite alternate;
+            display: none;
+        }
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 1vmin rgba(255, 111, 97, 0.5), 0 1vmin 3vmin rgba(0, 0, 0, 0.3);
+            }
+            to {
+                box-shadow: 0 0 3vmin rgba(255, 111, 97, 0.8), 0 1vmin 3vmin rgba(0, 0, 0, 0.3);
+            }
+        }
+        #messageBox.show {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            display: block;
+        }
+        h1 {
+            color: #ff6f61;
+            font-family: 'Pacifico', cursive;
+            font-size: 8vmin;
+            margin: 0;
+            text-shadow: 0.2vmin 0.2vmin 0.4vmin rgba(0, 0, 0, 0.2);
+            background: linear-gradient(to right, #ff6f61, #ff1493);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        p {
+            color: #333;
+            font-size: 4vmin;
+            line-height: 1.6;
+            font-family: 'Caveat', cursive;
+            margin: 2vmin 0;
+            background: linear-gradient(to right, #333, #ff6f61);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .highlight {
+            color: #ff6f61;
+            font-weight: bold;
+            background: none;
+            -webkit-background-clip: initial;
+            background-clip: initial;
+        }
+        #celebrationPopup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(255, 182, 193, 0.95), rgba(255, 245, 238, 0.95));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.5s ease-in-out;
+            z-index: 20;
+            box-sizing: border-box;
+            padding: 5vmin;
+            display: none;
+        }
+        #celebrationPopup.show {
+            opacity: 1;
+            transform: scale(1);
+            display: flex;
+        }
+        #celebrationPopup h1 {
+            font-size: 8vmin;
+            font-family: 'Pacifico', cursive;
+            margin: 0;
+            background: linear-gradient(to right, #ff6f61, #ff1493);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        #celebrationPopup p {
+            font-size: 4vmin;
+            max-width: 90vw;
+            font-family: 'Caveat', cursive;
+            background: linear-gradient(to right, #333, #ff6f61);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        button {
+            background: #ff6f61;
+            color: white;
+            border: none;
+            padding: 2vmin 4vmin;
+            margin: 2vmin;
+            border-radius: 2vmin;
+            font-size: 3vmin;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.1);
+        }
+        #musicToggle {
+            position: fixed;
+            top: 2vmin;
+            right: 2vmin;
+            padding: 1.5vmin 3vmin;
+            border-radius: 2vmin;
+            font-size: 3vmin;
+            z-index: 20;
+            display: none;
+        }
+        #musicToggle.show {
+            display: block;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+        }
+        #confettiCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 25;
+            pointer-events: none;
+        }
+        @media (max-width: 768px) {
+            #messageBox, #nameInputContainer {
+                padding: 6vmin;
+                border-radius: 4vmin;
+                max-width: 90vw;
+                border: 0.6vmin solid #ff6f61;
+            }
+            h1 {
+                font-size: 10vmin;
+            }
+            p {
+                font-size: 5vmin;
+                margin: 3vmin 0;
+            }
+            #celebrationPopup h1 {
+                font-size: 10vmin;
+            }
+            #celebrationPopup p {
+                font-size: 5vmin;
+                max-width: 95vw;
+            }
+            button {
+                padding: 3vmin 6vmin;
+                font-size: 4vmin;
+                border-radius: 3vmin;
+            }
+            #musicToggle {
+                padding: 2vmin 4vmin;
+                font-size: 4vmin;
+                border-radius: 3vmin;
+            }
+            #nameInputContainer input {
+                font-size: 5vmin;
+                padding: 3vmin;
+            }
+        }
+        @media (min-width: 768px) and (max-width: 1024px) {
+            #messageBox, #nameInputContainer {
+                padding: 4vmin;
+                border-radius: 2.5vmin;
+                max-width: 70vw;
+                border: 0.4vmin solid #ff6f61;
+            }
+            h1 {
+                font-size: 7vmin;
+            }
+            p {
+                font-size: 3.5vmin;
+                margin: 2vmin 0;
+            }
+            #celebrationPopup h1 {
+                font-size: 7vmin;
+            }
+            #celebrationPopup p {
+                font-size: 3.5vmin;
+                max-width: 80vw;
+            }
+            button {
+                padding: 1.5vmin 3vmin;
+                font-size: 2.5vmin;
+                border-radius: 1.5vmin;
+            }
+            #musicToggle {
+                padding: 1vmin 2vmin;
+                font-size: 2.5vmin;
+                border-radius: 1.5vmin;
+            }
+            #nameInputContainer input {
+                font-size: 3.5vmin;
+                padding: 2vmin;
+            }
+        }
+        @media (min-width: 1024px) {
+            #messageBox, #nameInputContainer {
+                padding: 3vmin;
+                border-radius: 2vmin;
+                max-width: 50vw;
+                border: 0.3vmin solid #ff6f61;
+            }
+            h1 {
+                font-size: 5vmin;
+            }
+            p {
+                font-size: 2.5vmin;
+                margin: 1.5vmin 0;
+            }
+            #celebrationPopup h1 {
+                font-size: 5vmin;
+            }
+            #celebrationPopup p {
+                font-size: 2.5vmin;
+                max-width: 60vw;
+            }
+            button {
+                padding: 1vmin 2vmin;
+                font-size: 2vmin;
+                border-radius: 1vmin;
+            }
+            #musicToggle {
+                padding: 0.8vmin 1.5vmin;
+                font-size: 2vmin;
+                border-radius: 1vmin;
+            }
+            #nameInputContainer input {
+                font-size: 2.5vmin;
+                padding: 1.5vmin;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="nameInputContainer">
+        <h1>What's Your Name? 🌸</h1>
+        <input type="text" id="userNameInput" placeholder="Enter your name" maxlength="20">
+        <button onclick="window.surpriseApp.submitName()">Submit</button>
+    </div>
+    <div id="messageBox">
+        <h1>Hello <span id="userNameMessage">You</span>! 🌸</h1>
+        <p>
+            I've seen ur video yesterday about the system crash during your practical—what a frustrating moment! But you know what? Your determination and talent totally shine through, and this little hiccup is just a bump in the road. I created this page with blooming flowers, cuddly teddy bears, and growing trees to bring some joy to your day. I know, I have to send this to u on yesterday but anyway, You're doing amazing things, <span class="highlight" id="userNameHighlight">You</span>, and I’m rooting for you! 😊<br><br>
+            Wishing you smiles and success, <br>Aditya
+        </p>
+    </div>
+    <div id="celebrationPopup">
+        <h1>Your Smile, <span id="userNamePopup">You</span>! 😊</h1>
+        <p>It takes 3 hours to write this code but your smile might be worth it, if you really find it relaxing!. Let me know if u really finds it well.</p>
+        <button id="closePopup" onclick="window.surpriseApp.closeCelebration()">Close</button>
+    </div>
+    <canvas id="confettiCanvas"></canvas>
+    <audio id="backgroundMusic" loop>
+        <source src="https://www.chosic.com/wp-content/uploads/2021/07/in-the-forest-ambience.mp3" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+    <button id="musicToggle">Pause Music</button>
+    <script>
+        // Global variables for p5.js
+        let flowers = [];
+        let teddyBears = [];
+        let centerTree;
+        let sideTrees = [];
+        let leaves = [];
+        let sparkles = [];
+        let backgroundSparkles = [];
+        let celebrationFlowers = [];
+        let heartParticles = [];
+        let gradientTime = 0;
+        let userName = localStorage.getItem('userName') || 'You';
+
+        // Namespace for app functions
+        window.surpriseApp = {
+            submitName: function() {
+                const input = document.getElementById('userNameInput');
+                const name = input.value.trim();
+                if (name) {
+                    userName = name.substring(0, 20); // Limit name length
+                    localStorage.setItem('userName', userName);
+                    this.updateNames();
+                    document.getElementById('nameInputContainer').style.display = 'none';
+                    document.getElementById('messageBox').classList.add('show');
+                    document.getElementById('musicToggle').classList.add('show');
+                    const audio = document.getElementById('backgroundMusic');
+                    audio.play().catch(() => console.log('Audio playback failed'));
+                }
+            },
+
+            updateNames: function() {
+                document.getElementById('userNameMessage').textContent = userName;
+                document.getElementById('userNameHighlight').textContent = userName;
+                document.getElementById('userNamePopup').textContent = userName;
+            },
+
+            showCelebration: function() {
+                const popup = document.getElementById('celebrationPopup');
+                document.getElementById('messageBox').style.display = 'none';
+                popup.classList.add('show');
+                for (let i = 0; i < Math.min(50, Math.floor(windowWidth / 20)); i++) {
+                    celebrationFlowers.push(new Flower(random(windowWidth), random(windowHeight)));
+                }
+                startConfetti();
+            },
+
+            closeCelebration: function() {
+                document.getElementById('celebrationPopup').classList.remove('show');
+                document.getElementById('messageBox').style.display = 'block';
+                celebrationFlowers = [];
+                stopConfetti();
+            }
+        };
+
+        // Audio control and initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('backgroundMusic');
+            const toggleButton = document.getElementById('musicToggle');
+            audio.volume = 0.3;
+
+            toggleButton.addEventListener('click', function() {
+                if (audio.paused) {
+                    audio.play().catch(() => console.log('Audio playback failed'));
+                    toggleButton.textContent = 'Pause Music';
+                } else {
+                    audio.pause();
+                    toggleButton.textContent = 'Play Music';
+                }
+            });
+
+            // Check if name exists in localStorage
+            if (localStorage.getItem('userName')) {
+                document.getElementById('nameInputContainer').style.display = 'none';
+                window.surpriseApp.updateNames();
+                document.getElementById('messageBox').classList.add('show');
+                document.getElementById('musicToggle').classList.add('show');
+                audio.play().catch(() => console.log('Audio playback failed'));
+            }
+
+            // Show congratulation popup after 25 seconds
+            setTimeout(() => {
+                window.surpriseApp.showCelebration();
+            }, 25000);
+        });
+
+        // Confetti animation
+        let confettiParticles = [];
+        let confettiCanvas, confettiCtx;
+        let isConfettiRunning = false;
+
+        function startConfetti() {
+            confettiCanvas = document.getElementById('confettiCanvas');
+            confettiCtx = confettiCanvas.getContext('2d');
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+            confettiParticles = [];
+            for (let i = 0; i < 50; i++) {
+                confettiParticles.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+                    size: Math.random() * 8 + 4,
+                    speedX: Math.random() * 4 - 2,
+                    speedY: Math.random() * 2 + 1,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 8 - 4
+                });
+            }
+            isConfettiRunning = true;
+            animateConfetti();
+        }
+
+        function stopConfetti() {
+            isConfettiRunning = false;
+            if (confettiCtx) {
+                confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            }
+            confettiParticles = [];
+        }
+
+        function animateConfetti() {
+            if (!isConfettiRunning) return;
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            confettiParticles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                p.rotation += p.rotationSpeed;
+                confettiCtx.fillStyle = p.color;
+                confettiCtx.save();
+                confettiCtx.translate(p.x, p.y);
+                confettiCtx.rotate(p.rotation * Math.PI / 180);
+                confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                confettiCtx.restore();
+                if (p.y > confettiCanvas.height) {
+                    p.y = -p.size;
+                    p.x = Math.random() * confettiCanvas.width;
+                }
+            });
+            requestAnimationFrame(animateConfetti);
+        }
+
+        // p5.js setup
+        function setup() {
+            let canvas = createCanvas(windowWidth, windowHeight);
+            canvas.style('display', 'block');
+            for (let i = 0; i < Math.min(10, Math.floor(windowWidth / 80)); i++) {
+                flowers.push(new Flower());
+            }
+            for (let i = 0; i < Math.min(8, Math.floor(windowWidth / 100)); i++) {
+                teddyBears.push(new TeddyBear());
+            }
+            centerTree = new Tree(windowWidth / 2, windowHeight, windowHeight * 0.4);
+            sideTrees.push(new SideTree(0, windowHeight, windowHeight * 0.5, 1));
+            sideTrees.push(new SideTree(windowWidth, windowHeight, windowHeight * 0.5, -1));
+            for (let i = 0; i < Math.min(15, Math.floor(windowWidth / 50)); i++) {
+                sparkles.push(new Sparkle());
+            }
+            for (let i = 0; i < Math.min(20, Math.floor(windowWidth / 40)); i++) {
+                backgroundSparkles.push(new BackgroundSparkle());
+            }
+            for (let i = 0; i < Math.min(15, Math.floor(windowWidth / 80)); i++) {
+                heartParticles.push(new HeartParticle());
+            }
+        }
+
+        // p5.js mousePressed for interactive flowers
+        function mousePressed() {
+            if (!document.getElementById('celebrationPopup').classList.contains('show') && document.getElementById('nameInputContainer').style.display === 'none') {
+                for (let i = 0; i < 3; i++) {
+                    flowers.push(new Flower(mouseX + random(-50, 50), mouseY + random(-50, 50)));
+                }
+            }
+        }
+
+        // p5.js draw
+        function draw() {
+            gradientTime += 0.005;
+            let r = 255 * (0.5 + 0.5 * sin(gradientTime));
+            let g = 255 * (0.5 + 0.5 * sin(gradientTime + TWO_PI / 3));
+            let b = 255 * (0.5 + 0.5 * sin(gradientTime + 2 * TWO_PI / 3));
+            background(r, g, b);
+
+            let gradient = drawingContext.createRadialGradient(
+                windowWidth / 2, windowHeight / 2, 0,
+                windowWidth / 2, windowHeight / 2, windowWidth * 0.7
+            );
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            drawingContext.fillStyle = gradient;
+            drawingContext.fillRect(0, 0, windowWidth, windowHeight);
+
+            for (let heart of heartParticles) {
+                heart.update();
+                heart.display();
+            }
+
+            for (let sparkle of backgroundSparkles) {
+                sparkle.update();
+                sparkle.display();
+            }
+
+            if (document.getElementById('celebrationPopup').classList.contains('show')) {
+                for (let flower of celebrationFlowers) {
+                    flower.update();
+                    flower.display();
+                }
+            } else if (document.getElementById('nameInputContainer').style.display === 'none') {
+                centerTree.update();
+                centerTree.display();
+                for (let tree of sideTrees) {
+                    tree.update();
+                    tree.display();
+                }
+                for (let i = leaves.length - 1; i >= 0; i--) {
+                    leaves[i].update();
+                    leaves[i].display();
+                    if (leaves[i].isOffScreen()) {
+                        leaves.splice(i, 1);
+                    }
+                }
+                for (let sparkle of sparkles) {
+                    sparkle.update();
+                    sparkle.display();
+                }
+                for (let flower of flowers) {
+                    flower.update();
+                    flower.display();
+                }
+                for (let teddy of teddyBears) {
+                    teddy.update();
+                    teddy.display();
+                }
+            }
+        }
+
+        // p5.js windowResized
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            centerTree.x = windowWidth / 2;
+            centerTree.y = windowHeight;
+            sideTrees[0].y = windowHeight;
+            sideTrees[1].x = windowWidth;
+            sideTrees[1].y = windowHeight;
+            for (let sparkle of sparkles) {
+                sparkle.reset();
+            }
+            for (let heart of heartParticles) {
+                heart.reset();
+            }
+            if (confettiCanvas) {
+                confettiCanvas.width = window.innerWidth;
+                confettiCanvas.height = window.innerHeight;
+            }
+        }
+
+        // p5.js classes
+        class Flower {
+            constructor(x = random(windowWidth), y = random(windowHeight)) {
+                this.x = x;
+                this.y = y;
+                this.size = random(windowWidth * 0.03, windowWidth * 0.06);
+                this.speedX = random(-windowWidth * 0.002, windowWidth * 0.002);
+                this.speedY = random(-windowWidth * 0.002, windowWidth * 0.002);
+                this.type = floor(random(5));
+                this.color = this.getColor();
+                this.petalColor = this.getPetalColor();
+            }
+
+            getColor() {
+                switch (this.type) {
+                    case 0: return color(255, 245, 247);
+                    case 1: return color(255, 105, 180);
+                    case 2: return color(255, 0, 0);
+                    case 3: return color(255, 215, 0);
+                    case 4: return color(255, 255, 255);
+                }
+            }
+
+            getPetalColor() {
+                switch (this.type) {
+                    case 0: return color(255, 182, 193);
+                    case 1: return color(255, 255, 0);
+                    case 2: return color(255, 215, 0);
+                    case 3: return color(139, 69, 19);
+                    case 4: return color(255, 255, 0);
+                }
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > windowWidth) this.speedX *= -1;
+                if (this.y < 0 || this.y > windowHeight) this.speedY *= -1;
+                this.size = windowWidth * 0.03 + windowWidth * 0.01 * sin(frameCount * 0.05 + this.x);
+            }
+
+            display() {
+                noStroke();
+                if (this.type === 3) {
+                    fill(this.color);
+                    for (let i = 0; i < 12; i++) {
+                        push();
+                        translate(this.x, this.y);
+                        rotate(TWO_PI * i / 12);
+                        ellipse(0, this.size / 1.5, this.size / 2, this.size);
+                        pop();
+                    }
+                    fill(this.petalColor);
+                    ellipse(this.x, this.y, this.size);
+                } else if (this.type === 0 || this.type === 1 || this.type === 2) {
+                    fill(this.color);
+                    for (let i = 0; i < 6; i++) {
+                        push();
+                        translate(this.x, this.y);
+                        rotate(TWO_PI * i / 6);
+                        ellipse(0, this.size / 2, this.size / 3, this.size * 1.2);
+                        pop();
+                    }
+                    fill(this.petalColor);
+                    ellipse(this.x, this.y, this.size / 3);
+                } else {
+                    fill(this.color);
+                    for (let i = 0; i < 20; i++) {
+                        push();
+                        translate(this.x, this.y);
+                        rotate(TWO_PI * i / 20);
+                        ellipse(0, this.size / 2, this.size / 4, this.size / 2);
+                        pop();
+                    }
+                    fill(this.petalColor);
+                    ellipse(this.x, this.y, this.size / 2);
+                }
+            }
+        }
+
+        class TeddyBear {
+            constructor() {
+                this.x = random(windowWidth);
+                this.y = random(windowHeight);
+                this.size = random(windowWidth * 0.04, windowWidth * 0.07);
+                this.speedX = random(-windowWidth * 0.001, windowWidth * 0.001);
+                this.speedY = random(-windowWidth * 0.001, windowWidth * 0.001);
+                this.angle = 0;
+                this.bobOffset = random(TWO_PI);
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY + sin(frameCount * 0.05 + this.bobOffset) * windowWidth * 0.0005;
+                if (this.x < 0 || this.x > windowWidth) this.speedX *= -1;
+                if (this.y < 0 || this.y > windowHeight) this.speedY *= -1;
+                this.angle += 0.01;
+            }
+
+            display() {
+                push();
+                translate(this.x, this.y);
+                rotate(sin(this.angle) * 0.15);
+                fill(139, 69, 19);
+                noStroke();
+                ellipse(0, this.size * 0.3, this.size * 0.6, this.size * 0.8);
+                ellipse(0, -this.size * 0.3, this.size * 0.6, this.size * 0.6);
+                ellipse(-this.size * 0.3, -this.size * 0.6, this.size * 0.2, this.size * 0.2);
+                ellipse(this.size * 0.3, -this.size * 0.6, this.size * 0.2, this.size * 0.2);
+                ellipse(-this.size * 0.4, this.size * 0.2, this.size * 0.2, this.size * 0.4);
+                ellipse(this.size * 0.4, this.size * 0.2, this.size * 0.2, this.size * 0.4);
+                ellipse(-this.size * 0.2, this.size * 0.7, this.size * 0.2, this.size * 0.3);
+                ellipse(this.size * 0.2, this.size * 0.7, this.size * 0.2, this.size * 0.3);
+                fill(255);
+                ellipse(0, this.size * 0.3, this.size * 0.4, this.size * 0.5);
+                fill(255);
+                ellipse(0, -this.size * 0.3, this.size * 0.3, this.size * 0.3);
+                fill(0);
+                ellipse(-this.size * 0.1, -this.size * 0.35, this.size * 0.05, this.size * 0.05);
+                ellipse(this.size * 0.1, -this.size * 0.35, this.size * 0.05, this.size * 0.05);
+                ellipse(0, -this.size * 0.25, this.size * 0.05, this.size * 0.05);
+                fill(255, 105, 180);
+                textSize(this.size * 0.2);
+                textAlign(CENTER, CENTER);
+                textFont('Caveat');
+                textStyle(BOLD);
+                drawingContext.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                drawingContext.shadowBlur = 4;
+                text(userName, 0, this.size * 0.3);
+                drawingContext.shadowBlur = 0;
+                pop();
+            }
+        }
+
+        class Tree {
+            constructor(x, y, maxHeight) {
+                this.x = x;
+                this.y = y;
+                this.height = 0;
+                this.maxHeight = maxHeight;
+                this.growthRate = windowWidth * 0.0005;
+                this.branchAngle = PI / 6;
+                this.leafSize = windowWidth * 0.01;
+            }
+
+            update() {
+                if (this.height < this.maxHeight) {
+                    this.height += this.growthRate;
+                }
+            }
+
+            display() {
+                push();
+                translate(this.x, this.y);
+                fill(139, 69, 19);
+                noStroke();
+                rect(-windowWidth * 0.01, -this.height, windowWidth * 0.02, this.height);
+                this.drawBranches(-this.height, this.height / 3, this.branchAngle);
+                pop();
+            }
+
+            drawBranches(y, length, angle) {
+                if (length < windowWidth * 0.01) return;
+                push();
+                translate(0, y);
+                rotate(angle);
+                fill(139, 69, 19);
+                rect(0, 0, windowWidth * 0.005, -length);
+                fill(34, 139, 34);
+                ellipse(0, -length, this.leafSize, this.leafSize);
+                pop();
+                push();
+                translate(0, y);
+                rotate(-angle);
+                fill(139, 69, 19);
+                rect(0, 0, windowWidth * 0.005, -length);
+                fill(34, 139, 34);
+                ellipse(0, -length, this.leafSize, this.leafSize);
+                pop();
+                this.drawBranches(y - length, length * 0.7, angle * 1.2);
+            }
+        }
+
+        class SideTree {
+            constructor(x, y, maxHeight, direction) {
+                this.x = x;
+                this.y = y;
+                this.height = 0;
+                this.maxHeight = maxHeight;
+                this.growthRate = windowWidth * 0.0005;
+                this.branchAngle = PI / 6;
+                this.leafSize = windowWidth * 0.012;
+                this.direction = direction;
+                this.leafMessages = [
+                    "You're a star! 🌟",
+                    "Smile, you rock! 😊",
+                    "Unstoppable you! 💪",
+                    "Glow on! ✨",
+                    "Pure magic! 🪄"
+                ];
+                this.leafTimer = 0;
+                this.leafInterval = 60;
+            }
+
+            update() {
+                if (this.height < this.maxHeight) {
+                    this.height += this.growthRate;
+                }
+                this.leafTimer++;
+                if (this.leafTimer >= this.leafInterval && this.height > this.maxHeight * 0.5) {
+                    leaves.push(new Leaf(this.x, this.y - this.height, this.direction, random(this.leafMessages)));
+                    this.leafTimer = 0;
+                }
+            }
+
+            display() {
+                push();
+                translate(this.x, this.y);
+                fill(139, 69, 19);
+                noStroke();
+                rect(-windowWidth * 0.01 * this.direction, -this.height, windowWidth * 0.02, this.height);
+                this.drawBranches(-this.height, this.height / 3, this.branchAngle);
+                pop();
+            }
+
+            drawBranches(y, length, angle) {
+                if (length < windowWidth * 0.01) return;
+                push();
+                translate(0, y);
+                rotate(angle * this.direction);
+                fill(139, 69, 19);
+                rect(0, 0, windowWidth * 0.005, -length);
+                fill(34, 139, 34);
+                ellipse(0, -length, this.leafSize, this.leafSize);
+                pop();
+                push();
+                translate(0, y);
+                rotate(-angle * this.direction);
+                fill(139, 69, 19);
+                rect(0, 0, windowWidth * 0.005, -length);
+                fill(34, 139, 34);
+                ellipse(0, -length, this.leafSize, this.leafSize);
+                pop();
+                this.drawBranches(y - length, length * 0.7, angle * 1.2);
+            }
+        }
+
+        class Leaf {
+            constructor(x, y, direction, message) {
+                this.x = x;
+                this.y = y;
+                this.speedX = direction * random(windowWidth * 0.001, windowWidth * 0.003);
+                this.speedY = random(windowWidth * 0.001, windowWidth * 0.003);
+                this.size = windowWidth * 0.05;
+                this.angle = random(TWO_PI);
+                this.swayOffset = random(TWO_PI);
+                this.message = message;
+                this.colorStart = color(34, 139, 34);
+                this.colorEnd = color(50, 205, 50);
+                this.hueShift = random(-10, 10);
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.angle += 0.05 + sin(frameCount * 0.1 + this.swayOffset) * 0.03;
+                this.speedY += windowWidth * 0.00005;
+            }
+
+            display() {
+                push();
+                translate(this.x, this.y);
+                rotate(this.angle);
+                let gradientColor = lerpColor(this.colorStart, this.colorEnd, 0.5 + sin(frameCount * 0.05 + this.swayOffset) * 0.2);
+                gradientColor = color(
+                    red(gradientColor) + this.hueShift,
+                    green(gradientColor) + this.hueShift,
+                    blue(gradientColor)
+                );
+                fill(gradientColor);
+                noStroke();
+                beginShape();
+                vertex(0, -this.size * 0.8);
+                bezierVertex(
+                    this.size * 0.4, -this.size * 0.4,
+                    this.size * 0.5, this.size * 0.2,
+                    0, this.size * 0.6
+                );
+                bezierVertex(
+                    -this.size * 0.5, this.size * 0.2,
+                    -this.size * 0.4, -this.size * 0.4,
+                    0, -this.size * 0.8
+                );
+                endShape(CLOSE);
+                stroke(255, 255, 255, 100);
+                strokeWeight(this.size * 0.05);
+                line(0, -this.size * 0.6, 0, this.size * 0.4);
+                line(0, -this.size * 0.2, this.size * 0.3, this.size * 0.1);
+                line(0, -this.size * 0.2, -this.size * 0.3, this.size * 0.1);
+                noStroke();
+                fill(255, 255, 255, 230);
+                ellipse(0, 0, this.size * 0.9, this.size * 0.55);
+                fill(255, 105, 97);
+                textSize(windowWidth * 0.018);
+                textAlign(CENTER, CENTER);
+                textFont('Caveat');
+                textStyle(BOLD);
+                drawingContext.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                drawingContext.shadowBlur = 4;
+                drawingContext.shadowOffsetX = 2;
+                drawingContext.shadowOffsetY = 2;
+                text(this.message, 0, 0);
+                drawingContext.shadowBlur = 0;
+                drawingContext.shadowOffsetX = 0;
+                drawingContext.shadowOffsetY = 0;
+                pop();
+            }
+
+            isOffScreen() {
+                return this.x < -windowWidth * 0.1 || this.x > windowWidth * 1.1 || this.y > windowHeight * 1.1;
+            }
+        }
+
+        class Sparkle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                const box = document.getElementById('messageBox');
+                const rect = box.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const radius = Math.max(rect.width, rect.height) / 2 + windowWidth * 0.05;
+                const angle = random(TWO_PI);
+                this.x = centerX + radius * cos(angle);
+                this.y = centerY + radius * sin(angle);
+                this.size = random(windowWidth * 0.005, windowWidth * 0.01);
+                this.speed = random(windowWidth * 0.0005, windowWidth * 0.002);
+                this.angle = random(TWO_PI);
+                this.lifetime = 60;
+                this.age = 0;
+            }
+
+            update() {
+                this.angle += 0.1;
+                this.age++;
+                if (this.age >= this.lifetime) {
+                    this.reset();
+                }
+            }
+
+            display() {
+                push();
+                translate(this.x, this.y);
+                rotate(this.angle);
+                fill(255, 215, 0, 255 * (1 - this.age / this.lifetime));
+                noStroke();
+                beginShape();
+                for (let i = 0; i < 4; i++) {
+                    let angle = i * PI / 2;
+                    vertex(this.size * cos(angle), this.size * sin(angle));
+                    angle += PI / 4;
+                    vertex(this.size * 0.5 * cos(angle), this.size * 0.5 * sin(angle));
+                }
+                endShape(CLOSE);
+                pop();
+            }
+        }
+
+        class BackgroundSparkle {
+            constructor() {
+                this.x = random(windowWidth);
+                this.y = random(windowHeight);
+                this.size = random(windowWidth * 0.003, windowWidth * 0.008);
+                this.alpha = random(100, 200);
+                this.speedX = random(-windowWidth * 0.0005, windowWidth * 0.0005);
+                this.speedY = random(-windowWidth * 0.0005, windowWidth * 0.0005);
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > windowWidth) this.speedX *= -1;
+                if (this.y < 0 || this.y > windowHeight) this.speedY *= -1;
+                this.alpha = 100 + 100 * sin(frameCount * 0.05 + this.x);
+            }
+
+            display() {
+                fill(255, 255, 255, this.alpha);
+                noStroke();
+                push();
+                translate(this.x, this.y);
+                beginShape();
+                for (let i = 0; i < 4; i++) {
+                    let angle = i * PI / 2;
+                    vertex(this.size * cos(angle), this.size * sin(angle));
+                    angle += PI / 4;
+                    vertex(this.size * 0.5 * cos(angle), this.size * 0.5 * sin(angle));
+                }
+                endShape(CLOSE);
+                pop();
+            }
+        }
+
+        class HeartParticle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = random(windowWidth);
+                this.y = random(windowHeight);
+                this.size = random(windowWidth * 0.01, windowWidth * 0.02);
+                this.speedX = random(-windowWidth * 0.0003, windowWidth * 0.0003);
+                this.speedY = random(-windowWidth * 0.0003, windowWidth * 0.0003);
+                this.alpha = random(50, 150);
+                this.angle = random(TWO_PI);
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.angle += 0.02;
+                if (this.x < 0 || this.x > windowWidth) this.speedX *= -1;
+                if (this.y < 0 || this.y > windowHeight) this.speedY *= -1;
+                this.alpha = 50 + 100 * sin(frameCount * 0.03 + this.x);
+            }
+
+            display() {
+                push();
+                translate(this.x, this.y);
+                rotate(this.angle);
+                fill(255, 105, 180, this.alpha);
+                noStroke();
+                beginShape();
+                vertex(0, -this.size * 0.5);
+                bezierVertex(
+                    this.size * 0.5, -this.size * 0.7,
+                    this.size * 0.7, 0,
+                    0, this.size * 0.5
+                );
+                bezierVertex(
+                    -this.size * 0.7, 0,
+                    -this.size * 0.5, -this.size * 0.7,
+                    0, -this.size * 0.5
+                );
+                endShape(CLOSE);
+                pop();
+            }
+        }
+    </script>
+</body>
+</html>
